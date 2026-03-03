@@ -6,6 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.Duration;
 
+/**
+ * Panel de formulario para agregar nuevos juegos al inventario
+ * Proporciona campos para ingresar toda la información del producto
+ */
 public class AdminFormPanel {
     private final ListaProductos lista;
     private final InventoryPanel inventoryPanel;
@@ -28,33 +32,41 @@ public class AdminFormPanel {
     public JPanel getMainPanel() { return mainPanel; }
 
     private void initUI() {
-        mainPanel.setBackground(new Color(245,245,245));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+                mainPanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8,8,8,8);
+        gbc.insets = new Insets(12,12,12,12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
 
         nombreField = EstilosUI.crearCampoTexto();
+        nombreField.setToolTipText("Nombre del juego de mesa");
         precioField = EstilosUI.crearCampoTexto();
+        precioField.setToolTipText("Precio en dólares (ej: 45.99)");
         jugadoresField = EstilosUI.crearCampoNumero();
+        jugadoresField.setToolTipText("Número de jugadores (ej: 2-4)");
         duracionField = EstilosUI.crearCampoNumero();
+        duracionField.setToolTipText("Duración en minutos (ej: 60)");
         edadField = EstilosUI.crearCampoNumero();
+        edadField.setToolTipText("Edad mínima recomendada (ej: 8)");
         categoriaField = new JComboBox<>(new String[]{"Estrategia","Cooperativo","Fiesta","Rol","Guerra","Abstracto"});
+        categoriaField.setToolTipText("Selecciona la categoría del juego");
         categoriaField.setMaximumSize(new Dimension(300,30));
 
         int y = 0;
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Nombre:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Precio:"), gbc);
+        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Nombre:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Precio ($):"), gbc);
         gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(nombreField, gbc); gbc.gridx = 1; mainPanel.add(precioField, gbc);
 
         gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Cantidad Jugadores:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Duración (min):"), gbc);
         gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(jugadoresField, gbc); gbc.gridx = 1; mainPanel.add(duracionField, gbc);
 
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Edad Minima:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Categoria"), gbc);
+        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Edad mínima:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Categoría:"), gbc);
         gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(edadField, gbc); gbc.gridx = 1; mainPanel.add(categoriaField, gbc);
 
-        gbc.gridy = y++; gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.gridy = y++; gbc.gridx = 0; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER; gbc.weightx = 0;
         JButton guardar = EstilosUI.crearBotonRedondeado("Guardar Juego", new Color(60,121,98), new Color(119,187,162));
+        guardar.setPreferredSize(new Dimension(180, 40));
+        guardar.setToolTipText("Guardar nuevo juego en el inventario");
         mainPanel.add(guardar, gbc);
 
         guardar.addActionListener(e -> procesarRegistro());

@@ -24,7 +24,7 @@ public class Main {
             HomePanel home = new HomePanel(lista);
             home.setVisible(true);
         });
-
+// hola
     }
 }
 

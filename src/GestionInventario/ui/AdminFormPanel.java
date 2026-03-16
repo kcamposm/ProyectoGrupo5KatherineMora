@@ -1,17 +1,15 @@
 package GestionInventario.ui;
 
-import GestionInventario.bl.entities.productos.ListaProductos;
+import GestionInventario.bl.entities.tienda.Tienda;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 import java.time.Duration;
 
-/**
- * Panel de formulario para agregar nuevos juegos al inventario
- * Proporciona campos para ingresar toda la información del producto
- */
 public class AdminFormPanel {
-    private final ListaProductos lista;
+
+    private final Tienda tienda;
     private final InventoryPanel inventoryPanel;
     private final JPanel mainPanel;
 
@@ -22,51 +20,99 @@ public class AdminFormPanel {
     private JTextField edadField;
     private JComboBox<String> categoriaField;
 
-    public AdminFormPanel(ListaProductos lista, InventoryPanel inventoryPanel) {
-        this.lista = lista;
+    public AdminFormPanel(Tienda tienda, InventoryPanel inventoryPanel) {
+        this.tienda = tienda;
         this.inventoryPanel = inventoryPanel;
         this.mainPanel = new JPanel(new GridBagLayout());
         initUI();
     }
 
-    public JPanel getMainPanel() { return mainPanel; }
+    public JPanel getMainPanel() {
+        return mainPanel;
+    }
 
     private void initUI() {
-                mainPanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(12,12,12,12);
+        gbc.insets = new Insets(12, 12, 12, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
 
         nombreField = EstilosUI.crearCampoTexto();
         nombreField.setToolTipText("Nombre del juego de mesa");
+
         precioField = EstilosUI.crearCampoTexto();
-        precioField.setToolTipText("Precio en dólares (ej: 45.99)");
+        precioField.setToolTipText("Precio en dólares, por ejemplo: 45.99");
+
         jugadoresField = EstilosUI.crearCampoNumero();
-        jugadoresField.setToolTipText("Número de jugadores (ej: 2-4)");
+        jugadoresField.setToolTipText("Cantidad de jugadores");
+
         duracionField = EstilosUI.crearCampoNumero();
-        duracionField.setToolTipText("Duración en minutos (ej: 60)");
+        duracionField.setToolTipText("Duración en minutos");
+
         edadField = EstilosUI.crearCampoNumero();
-        edadField.setToolTipText("Edad mínima recomendada (ej: 8)");
-        categoriaField = new JComboBox<>(new String[]{"Estrategia","Cooperativo","Fiesta","Rol","Guerra","Abstracto"});
+        edadField.setToolTipText("Edad mínima recomendada");
+
+        categoriaField = new JComboBox<>(new String[]{
+                "Estrategia", "Cooperativo", "Fiesta", "Rol", "Guerra", "Abstracto"
+        });
         categoriaField.setToolTipText("Selecciona la categoría del juego");
-        categoriaField.setMaximumSize(new Dimension(300,30));
+        categoriaField.setMaximumSize(new Dimension(300, 30));
 
         int y = 0;
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Nombre:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Precio ($):"), gbc);
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(nombreField, gbc); gbc.gridx = 1; mainPanel.add(precioField, gbc);
 
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Cantidad Jugadores:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Duración (min):"), gbc);
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(jugadoresField, gbc); gbc.gridx = 1; mainPanel.add(duracionField, gbc);
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridx = 1;
+        mainPanel.add(new JLabel("Precio ($):"), gbc);
 
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(new JLabel("Edad mínima:"), gbc); gbc.gridx = 1; mainPanel.add(new JLabel("Categoría:"), gbc);
-        gbc.gridy = y++; gbc.gridx = 0; mainPanel.add(edadField, gbc); gbc.gridx = 1; mainPanel.add(categoriaField, gbc);
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(nombreField, gbc);
+        gbc.gridx = 1;
+        mainPanel.add(precioField, gbc);
 
-        gbc.gridy = y++; gbc.gridx = 0; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.CENTER; gbc.weightx = 0;
-        JButton guardar = EstilosUI.crearBotonRedondeado("Guardar Juego", new Color(60,121,98), new Color(119,187,162));
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(new JLabel("Cantidad de jugadores:"), gbc);
+        gbc.gridx = 1;
+        mainPanel.add(new JLabel("Duración (min):"), gbc);
+
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(jugadoresField, gbc);
+        gbc.gridx = 1;
+        mainPanel.add(duracionField, gbc);
+
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(new JLabel("Edad mínima:"), gbc);
+        gbc.gridx = 1;
+        mainPanel.add(new JLabel("Categoría:"), gbc);
+
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        mainPanel.add(edadField, gbc);
+        gbc.gridx = 1;
+        mainPanel.add(categoriaField, gbc);
+
+        gbc.gridy = y++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.weightx = 0;
+
+        JButton guardar = EstilosUI.crearBotonRedondeado(
+                "Guardar Juego",
+                new Color(60, 121, 98),
+                new Color(119, 187, 162)
+        );
         guardar.setPreferredSize(new Dimension(180, 40));
-        guardar.setToolTipText("Guardar nuevo juego en el inventario");
+        guardar.setToolTipText("Guardar nuevo juego en el inventario y en la base de datos");
+
         mainPanel.add(guardar, gbc);
 
         guardar.addActionListener(e -> procesarRegistro());
@@ -75,96 +121,147 @@ public class AdminFormPanel {
     private void procesarRegistro() {
         String nombre = nombreField.getText().trim();
         if (nombre.isBlank()) {
-            JOptionPane.showMessageDialog(mainPanel, "El nombre es obligatorio.", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "El nombre es obligatorio.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
             nombreField.requestFocus();
             return;
         }
 
-        String precioTxt = precioField.getText().trim().replace(",", ".");
         double precio;
         try {
-            if (precioTxt.isEmpty()) throw new NumberFormatException();
-            precio = Double.parseDouble(precioTxt);
-            if (precio < 0) throw new NumberFormatException();
+            String precioTexto = precioField.getText().trim().replace(",", ".");
+            if (precioTexto.isEmpty()) {
+                throw new NumberFormatException();
+            }
+
+            precio = Double.parseDouble(precioTexto);
+            if (precio < 0) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(mainPanel, "Precio inválido. Escriba un número positivo (ej. 40.50).", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Precio inválido. Escriba un número positivo, por ejemplo 40.50.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
             precioField.requestFocus();
             return;
         }
 
         int jugadores;
         try {
-            String jtxt = jugadoresField.getText().trim();
-            if (jtxt.isEmpty()) throw new NumberFormatException();
-            jugadores = Integer.parseInt(jtxt);
-            if (jugadores <= 0) throw new NumberFormatException();
+            String jugadoresTexto = jugadoresField.getText().trim();
+            if (jugadoresTexto.isEmpty()) {
+                throw new NumberFormatException();
+            }
+
+            jugadores = Integer.parseInt(jugadoresTexto);
+            if (jugadores <= 0) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(mainPanel, "Cantidad de jugadores inválida. Escriba un entero mayor que 0.", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Cantidad de jugadores inválida. Debe ser un entero mayor que 0.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
             jugadoresField.requestFocus();
             return;
         }
 
-        long durMin;
+        long duracion;
         try {
-            String dtxt = duracionField.getText().trim();
-            if (dtxt.isEmpty()) throw new NumberFormatException();
-            durMin = Long.parseLong(dtxt);
-            if (durMin <= 0) throw new NumberFormatException();
+            String duracionTexto = duracionField.getText().trim();
+            if (duracionTexto.isEmpty()) {
+                throw new NumberFormatException();
+            }
+
+            duracion = Long.parseLong(duracionTexto);
+            if (duracion <= 0) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(mainPanel, "Duración inválida. Escriba minutos como número entero (ej. 50).", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Duración inválida. Debe ser un entero mayor que 0.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
             duracionField.requestFocus();
             return;
         }
 
-
         int edad;
         try {
-            String etxt = edadField.getText().trim();
-            if (etxt.isEmpty()) {
-                // Si quieres permitir vacío, asigna un valor por defecto (ej. 0)
+            String edadTexto = edadField.getText().trim();
+            if (edadTexto.isEmpty()) {
                 edad = 0;
             } else {
-                edad = Integer.parseInt(etxt);
-                if (edad < 0) throw new NumberFormatException();
+                edad = Integer.parseInt(edadTexto);
+                if (edad < 0) {
+                    throw new NumberFormatException();
+                }
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(mainPanel, "Edad mínima inválida. Escriba un número entero (ej. 8).", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Edad mínima inválida. Debe ser 0 o un entero positivo.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
             edadField.requestFocus();
             return;
         }
 
         String categoria = (String) categoriaField.getSelectedItem();
-        String imagen = ""; // placeholder si no manejas imagen ahora
 
-        // Insertar en la lista compartida (usar insertarNodoFinal para mantener orden)
         try {
-            lista.insertarNodoInicio(nombre, precio, jugadores, java.time.Duration.ofMinutes(durMin), edad, categoria, imagen);
-            JOptionPane.showMessageDialog(mainPanel, "Producto agregado al inventario.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            tienda.agregarProductoAlInventario(
+                    nombre,
+                    precio,
+                    jugadores,
+                    Duration.ofMinutes(duracion),
+                    edad,
+                    categoria,
+                    ""
+            );
 
-            // Refrescar la vista de inventario si existe
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "Producto guardado correctamente en la base de datos y en el inventario.",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
             if (inventoryPanel != null) {
                 inventoryPanel.refresh();
             }
 
-            // Limpiar campos
-            nombreField.setText("");
-            precioField.setText("");
-            jugadoresField.setText("");
-            duracionField.setText("");
-            edadField.setText("");
-            nombreField.requestFocus();
+            limpiarCampos();
 
-        } catch (Exception ex) {
-            // Captura cualquier error inesperado y lo muestra
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(mainPanel, "Error al guardar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(
+                    mainPanel,
+                    "No se pudo guardar el producto en la base de datos.\n\nDetalle: " + ex.getMessage(),
+                    "Error de Base de Datos",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
+    }
 
-
-
-
-
-
-
+    private void limpiarCampos() {
+        nombreField.setText("");
+        precioField.setText("");
+        jugadoresField.setText("");
+        duracionField.setText("");
+        edadField.setText("");
+        categoriaField.setSelectedIndex(0);
+        nombreField.requestFocus();
     }
 }

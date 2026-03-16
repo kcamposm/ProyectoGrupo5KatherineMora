@@ -1,5 +1,8 @@
 package GestionInventario.bl.entities.productos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ArbolProductos {
 
     private static class NodoArbol {
@@ -63,6 +66,10 @@ public class ArbolProductos {
         return buscar(nombre) != null;
     }
 
+    public boolean estaVacio() {
+        return raiz == null;
+    }
+
     public void mostrarEnOrden() {
         if (raiz == null) {
             System.out.println("El inventario está vacío.");
@@ -80,7 +87,18 @@ public class ArbolProductos {
         mostrarEnOrdenRec(actual.derecho);
     }
 
-    public boolean estaVacio() {
-        return raiz == null;
+    public List<Producto> obtenerProductosEnOrden() {
+        List<Producto> lista = new ArrayList<>();
+        obtenerEnOrdenRec(raiz, lista);
+        return lista;
+    }
+
+    private void obtenerEnOrdenRec(NodoArbol actual, List<Producto> lista) {
+        if (actual == null) {
+            return;
+        }
+        obtenerEnOrdenRec(actual.izquierdo, lista);
+        lista.add(actual.producto);
+        obtenerEnOrdenRec(actual.derecho, lista);
     }
 }

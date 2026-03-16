@@ -1,35 +1,20 @@
 package GestionInventario.bl.entities.productos;
 
-import java.awt.*;
-import java.sql.Time;
 import java.time.Duration;
-import java.util.Date;
 
 public class Producto {
-
-
-        /*De cada Producto hace falta registrar su nombre, precio,
-    categoria y fechaVencimiento (si aplica), además de una cantidad, la cual representará la
-    cantidad de unidades del Producto */
-
-
-//Atributos
 
     private String nombre;
     private double precio;
     private int cantidadJugadores;
     private Duration duracionJuego;
     private int edadMinima;
-    private String  categoria;
+    private String categoria;
     private String imagenProducto;
+    private Producto siguiente;
 
-    private Producto siguiente; // Este es el enlace que apunta al siguiente nodo de la lista
-
-    //Metodos
-    //Constructor
-
-
-    public Producto(String nombre, double precio, int cantidadJugadores, Duration duracionJuego, int edadMinima, String categoria, String imagenProducto) {
+    public Producto(String nombre, double precio, int cantidadJugadores, Duration duracionJuego,
+                    int edadMinima, String categoria, String imagenProducto) {
         this.nombre = nombre;
         this.precio = precio;
         this.cantidadJugadores = cantidadJugadores;
@@ -37,11 +22,12 @@ public class Producto {
         this.edadMinima = edadMinima;
         this.categoria = categoria;
         this.imagenProducto = imagenProducto;
-        this.siguiente = null; //Como este dato no se puede nunca saber de antemano, siguiente nace null
+        this.siguiente = null;
     }
 
-    //-----------------------------------------------Getters Setters-----------------------------------------------
-
+    public Producto copiar() {
+        return new Producto(nombre, precio, cantidadJugadores, duracionJuego, edadMinima, categoria, imagenProducto);
+    }
 
     public String getNombre() {
         return nombre;
@@ -67,13 +53,12 @@ public class Producto {
         return categoria;
     }
 
-    public Producto getSiguiente() {
-        return siguiente;
-
-    }
-
     public String getImagenProducto() {
         return imagenProducto;
+    }
+
+    public Producto getSiguiente() {
+        return siguiente;
     }
 
     public void setNombre(String nombre) {
@@ -108,15 +93,13 @@ public class Producto {
         this.siguiente = siguiente;
     }
 
-
-
     @Override
     public String toString() {
         return "Producto{" +
                 "nombre='" + nombre + '\'' +
                 ", precio=" + precio +
                 ", cantidadJugadores=" + cantidadJugadores +
-                ", duracionJuego=" + duracionJuego +
+                ", duracionJuego=" + duracionJuego.toMinutes() + " min" +
                 ", edadMinima=" + edadMinima +
                 ", categoria='" + categoria + '\'' +
                 '}';

@@ -1,16 +1,11 @@
 package GestionInventario.bl.entities.productos;
 
 import java.time.Duration;
-import java.util.Date;
 
 public class ListaProductos {
 
+    private Producto primero;
 
-    //Atributos
-    private  Producto primero;
-
-    //metodos
-    //Constructor
     public ListaProductos() {
         this.primero = null;
     }
@@ -18,103 +13,152 @@ public class ListaProductos {
     public Producto getPrimero() {
         return primero;
     }
+
     public void setPrimero(Producto primero) {
         this.primero = primero;
     }
 
-    //Operaciones
-
-    //--------------------------CREATE-------------------------
-    public void insertarNodoInicio(String nombre, double precio, int cantidadJugadores, Duration duracionJuego, int edadMinima, String categoria,String imagenProducto){
-        Producto nuevo = new Producto(nombre,precio,cantidadJugadores,duracionJuego,edadMinima,categoria,imagenProducto);
-        nuevo.setSiguiente(primero); //preservar la lista mediante la conservacion de la referencia al 1
-        setPrimero(nuevo); //Insercion del nuevo nodo como primero en la lista
-    }
-
-    private boolean estaVacia(){
+    public boolean estaVacia() {
         return primero == null;
     }
 
-    public void insertarNodoFinal(String nombre, double precio, int cantidadJugadores, Duration duracionJuego, int edadMinima, String categoria,String imagenProducto){
-        Producto nuevo = new Producto(nombre,precio,cantidadJugadores,duracionJuego,edadMinima,categoria,imagenProducto);
-        if (estaVacia()){
-            setPrimero(nuevo);
+    public void insertarNodoInicio(String nombre, double precio, int cantidadJugadores,
+                                   Duration duracionJuego, int edadMinima,
+                                   String categoria, String imagenProducto) {
+        Producto nuevo = new Producto(nombre, precio, cantidadJugadores, duracionJuego,
+                edadMinima, categoria, imagenProducto);
+        nuevo.setSiguiente(primero);
+        primero = nuevo;
+    }
+
+    public void insertarNodoFinal(String nombre, double precio, int cantidadJugadores,
+                                  Duration duracionJuego, int edadMinima,
+                                  String categoria, String imagenProducto) {
+        Producto nuevo = new Producto(nombre, precio, cantidadJugadores, duracionJuego,
+                edadMinima, categoria, imagenProducto);
+        insertarProductoFinal(nuevo);
+    }
+
+    public void insertarProductoFinal(Producto producto) {
+        if (producto == null) {
+            return;
+        }
+
+        producto.setSiguiente(null);
+
+        if (estaVacia()) {
+            primero = producto;
             return;
         }
 
         Producto temp = primero;
-
-        while (temp.getSiguiente() != null){
+        while (temp.getSiguiente() != null) {
             temp = temp.getSiguiente();
-            temp.setSiguiente(nuevo); // pasar la referencia de temp al siguiente nodo
         }
-
-        temp.setSiguiente(nuevo);//Ponerle al ultimo nodo el nuevo como siguiente
+        temp.setSiguiente(producto);
     }
 
-
-
-    //--------------------------READ-------------------------
-
-    public Producto buscar(String nombre){
-        if (estaVacia()){
-            System.out.println("La lista esta vacia");
+    public Producto buscar(String nombre) {
+        if (estaVacia()) {
             return null;
         }
 
         Producto temp = primero;
-        while ( temp != null && !temp.getNombre().equals(nombre)){
+        while (temp != null && !temp.getNombre().equalsIgnoreCase(nombre)) {
             temp = temp.getSiguiente();
         }
-
-        if (temp == null){
-            System.out.println("El nombre no se encontro en la lista");
-        } else  {
-            System.out.println("El nombre se encontro en la lista");
-        }
-
         return temp;
     }
 
-    public  void  mostrarLista(){
-        if (estaVacia()){
-            System.out.println("La lista esta vacia");
+    public void mostrarLista() {
+        if (estaVacia()) {
+            System.out.println("La lista está vacía.");
             return;
         }
 
         Producto temp = primero;
-        while (temp != null){
-            System.out.println(temp);
+        int indice = 1;
+        while (temp != null) {
+            System.out.println(indice + ". " + temp);
+            temp = temp.getSiguiente();
+            indice++;
+        }
+    }
+
+    public Producto eliminarNodo(String nombre) {
+        if (estaVacia()) {
+            return null;
+        }
+
+        if (primero.getNombre().equalsIgnoreCase(nombre)) {
+            Producto eliminado = primero;
+            primero = primero.getSiguiente();
+            eliminado.setSiguiente(null);
+            return eliminado;
+        }
+
+        Producto anterior = primero;
+        Producto actual = primero.getSiguiente();
+
+        while (actual != null && !actual.getNombre().equalsIgnoreCase(nombre)) {
+            anterior = actual;
+            actual = actual.getSiguiente();
+        }
+
+        if (actual == null) {
+            return null;
+        }
+
+        anterior.setSiguiente(actual.getSiguiente());
+        actual.setSiguiente(null);
+        return actual;
+    }
+
+    public int contarProductos() {
+        int cantidad = 0;
+        Producto temp = primero;
+        while (temp != null) {
+            cantidad++;
             temp = temp.getSiguiente();
         }
+        return cantidad;
     }
 
-
-
-    //--------------------------DELETE-------------------------
-
-    public Producto eliminarNodo(String nombre){
-        if (estaVacia()) return null;
-
+    public double calcularTotal() {
+        double total = 0;
         Producto temp = primero;
-        Producto anteriorTemp = temp;
-
-        while ( temp != null && !temp.getNombre().equals(nombre)){
-            anteriorTemp = temp; //poner al dia al anterior con respecto al temporar alntes de moverlo
-            temp = temp.getSiguiente(); // pasar la referencia de temp al siguiente nodo
+        while (temp != null) {
+            total += temp.getPrecio();
+            temp = temp.getSiguiente();
         }
-
-        if (temp == null){
-            System.out.println("El nombre no se encontro en la lista");
-        } else  {
-            System.out.println("El nombre se elimino de la lista");
-            anteriorTemp.setSiguiente(temp.getSiguiente()); //conectamos al anterior del temporal con su siguiente
-        }
-
-        return temp;
+        return total;
     }
 
+    public String generarDetalleFactura() {
+        if (estaVacia()) {
+            return "Carrito vacío.\n";
+        }
 
+        StringBuilder sb = new StringBuilder();
+        Producto temp = primero;
+        int linea = 1;
 
+        while (temp != null) {
+            sb.append(linea)
+                    .append(". ")
+                    .append(temp.getNombre())
+                    .append(" | Categoría: ")
+                    .append(temp.getCategoria())
+                    .append(" | Precio: $")
+                    .append(String.format("%.2f", temp.getPrecio()))
+                    .append("\n");
+            temp = temp.getSiguiente();
+            linea++;
+        }
 
+        sb.append("Total de productos: ").append(contarProductos()).append("\n");
+        sb.append("Total a pagar: $").append(String.format("%.2f", calcularTotal())).append("\n");
+
+        return sb.toString();
+    }
 }

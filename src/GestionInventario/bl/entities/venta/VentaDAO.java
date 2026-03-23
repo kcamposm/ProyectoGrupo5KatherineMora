@@ -1,7 +1,8 @@
-package GestionInventario.dao;
+package GestionInventario.bl.entities.venta;
 
 import GestionInventario.bl.entities.clientes.Cliente;
 import GestionInventario.bl.entities.productos.Producto;
+import GestionInventario.dl.DBConnection;
 
 import java.sql.*;
 

@@ -4,8 +4,8 @@ import GestionInventario.bl.entities.clientes.Cliente;
 import GestionInventario.bl.entities.clientes.ColaClientes;
 import GestionInventario.bl.entities.productos.ArbolProductos;
 import GestionInventario.bl.entities.productos.Producto;
-import GestionInventario.dao.ProductoDAO;
-import GestionInventario.dao.VentaDAO;
+import GestionInventario.bl.entities.productos.ProductoDAO;
+import GestionInventario.bl.entities.venta.VentaDAO;
 
 import java.sql.SQLException;
 import java.time.Duration;

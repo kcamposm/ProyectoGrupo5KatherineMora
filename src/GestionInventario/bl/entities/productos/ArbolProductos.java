@@ -56,14 +56,12 @@ public class ArbolProductos {
         if (comparacion == 0) {
             return actual.producto;
         }
+
         if (comparacion < 0) {
             return buscarRec(actual.izquierdo, nombre);
         }
-        return buscarRec(actual.derecho, nombre);
-    }
 
-    public boolean contiene(String nombre) {
-        return buscar(nombre) != null;
+        return buscarRec(actual.derecho, nombre);
     }
 
     public boolean estaVacio() {
@@ -88,7 +86,7 @@ public class ArbolProductos {
     }
 
     public List<Producto> obtenerProductosEnOrden() {
-        List<Producto> lista = new ArrayList<>();
+        List<Producto> lista = new ArrayList<Producto>();
         obtenerEnOrdenRec(raiz, lista);
         return lista;
     }

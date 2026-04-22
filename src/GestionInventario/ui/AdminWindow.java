@@ -93,9 +93,7 @@ public class AdminWindow extends JFrame {
         inventoryPanel = new InventoryPanel(tienda);
         clientesPanel = new ClientesPanel(tienda);
         ventasPanel = new VentasPanel(tienda, clientesPanel);
-
-        // CORREGIDO: AdminFormPanel ahora recibe solo (tienda, inventoryPanel)
-        formPanel = new AdminFormPanel(tienda, inventoryPanel);
+        formPanel = new AdminFormPanel(tienda, inventoryPanel, clientesPanel);
 
         inventoryPanel.refresh();
         clientesPanel.recargarProductos();

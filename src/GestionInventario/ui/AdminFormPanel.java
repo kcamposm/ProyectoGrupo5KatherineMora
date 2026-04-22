@@ -11,6 +11,7 @@ public class AdminFormPanel {
 
     private final Tienda tienda;
     private final InventoryPanel inventoryPanel;
+    private final ClientesPanel clientesPanel;
     private final JPanel mainPanel;
 
     private JTextField nombreField;
@@ -20,9 +21,10 @@ public class AdminFormPanel {
     private JTextField edadField;
     private JComboBox<String> categoriaField;
 
-    public AdminFormPanel(Tienda tienda, InventoryPanel inventoryPanel) {
+    public AdminFormPanel(Tienda tienda, InventoryPanel inventoryPanel, ClientesPanel clientesPanel) {
         this.tienda = tienda;
         this.inventoryPanel = inventoryPanel;
+        this.clientesPanel = clientesPanel;
         this.mainPanel = new JPanel(new GridBagLayout());
         initUI();
     }
@@ -40,25 +42,16 @@ public class AdminFormPanel {
         gbc.weightx = 1;
 
         nombreField = EstilosUI.crearCampoTexto();
-        nombreField.setToolTipText("Nombre del juego de mesa");
-
         precioField = EstilosUI.crearCampoTexto();
-        precioField.setToolTipText("Precio en dólares, por ejemplo: 45.99");
-
         jugadoresField = EstilosUI.crearCampoNumero();
-        jugadoresField.setToolTipText("Cantidad de jugadores");
-
         duracionField = EstilosUI.crearCampoNumero();
-        duracionField.setToolTipText("Duración en minutos");
-
         edadField = EstilosUI.crearCampoNumero();
-        edadField.setToolTipText("Edad mínima recomendada");
 
-        categoriaField = new JComboBox<>(new String[]{
+        categoriaField = new JComboBox<String>(new String[]{
                 "Estrategia", "Cooperativo", "Fiesta", "Rol", "Guerra", "Abstracto"
         });
-        categoriaField.setToolTipText("Selecciona la categoría del juego");
-        categoriaField.setMaximumSize(new Dimension(300, 30));
+        categoriaField.setUI(new EstilosUI.ComboBoxRedondeado());
+        categoriaField.setMaximumSize(new Dimension(300, 36));
 
         int y = 0;
 
@@ -111,7 +104,6 @@ public class AdminFormPanel {
                 new Color(119, 187, 162)
         );
         guardar.setPreferredSize(new Dimension(180, 40));
-        guardar.setToolTipText("Guardar nuevo juego en el inventario y en la base de datos");
 
         mainPanel.add(guardar, gbc);
 
@@ -121,78 +113,43 @@ public class AdminFormPanel {
     private void procesarRegistro() {
         String nombre = nombreField.getText().trim();
         if (nombre.isBlank()) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "El nombre es obligatorio.",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "El nombre es obligatorio.", "Error", JOptionPane.WARNING_MESSAGE);
             nombreField.requestFocus();
             return;
         }
 
         double precio;
         try {
-            String precioTexto = precioField.getText().trim().replace(",", ".");
-            if (precioTexto.isEmpty()) {
-                throw new NumberFormatException();
-            }
-
-            precio = Double.parseDouble(precioTexto);
+            precio = Double.parseDouble(precioField.getText().trim().replace(",", "."));
             if (precio < 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Precio inválido. Escriba un número positivo, por ejemplo 40.50.",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "Precio inválido.", "Error", JOptionPane.WARNING_MESSAGE);
             precioField.requestFocus();
             return;
         }
 
         int jugadores;
         try {
-            String jugadoresTexto = jugadoresField.getText().trim();
-            if (jugadoresTexto.isEmpty()) {
-                throw new NumberFormatException();
-            }
-
-            jugadores = Integer.parseInt(jugadoresTexto);
+            jugadores = Integer.parseInt(jugadoresField.getText().trim());
             if (jugadores <= 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Cantidad de jugadores inválida. Debe ser un entero mayor que 0.",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "Cantidad de jugadores inválida.", "Error", JOptionPane.WARNING_MESSAGE);
             jugadoresField.requestFocus();
             return;
         }
 
         long duracion;
         try {
-            String duracionTexto = duracionField.getText().trim();
-            if (duracionTexto.isEmpty()) {
-                throw new NumberFormatException();
-            }
-
-            duracion = Long.parseLong(duracionTexto);
+            duracion = Long.parseLong(duracionField.getText().trim());
             if (duracion <= 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Duración inválida. Debe ser un entero mayor que 0.",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "Duración inválida.", "Error", JOptionPane.WARNING_MESSAGE);
             duracionField.requestFocus();
             return;
         }
@@ -200,21 +157,12 @@ public class AdminFormPanel {
         int edad;
         try {
             String edadTexto = edadField.getText().trim();
-            if (edadTexto.isEmpty()) {
-                edad = 0;
-            } else {
-                edad = Integer.parseInt(edadTexto);
-                if (edad < 0) {
-                    throw new NumberFormatException();
-                }
+            edad = edadTexto.isBlank() ? 0 : Integer.parseInt(edadTexto);
+            if (edad < 0) {
+                throw new NumberFormatException();
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Edad mínima inválida. Debe ser 0 o un entero positivo.",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "Edad mínima inválida.", "Error", JOptionPane.WARNING_MESSAGE);
             edadField.requestFocus();
             return;
         }
@@ -232,23 +180,16 @@ public class AdminFormPanel {
                     ""
             );
 
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Producto guardado correctamente en la base de datos y en el inventario.",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            JOptionPane.showMessageDialog(mainPanel, "Producto agregado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-            if (inventoryPanel != null) {
-                inventoryPanel.refresh();
-            }
-
+            inventoryPanel.refresh();
+            clientesPanel.recargarProductos();
             limpiarCampos();
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(
                     mainPanel,
-                    "No se pudo guardar el producto en la base de datos.\n\nDetalle: " + ex.getMessage(),
+                    "No se pudo guardar el producto.\nDetalle: " + ex.getMessage(),
                     "Error de Base de Datos",
                     JOptionPane.ERROR_MESSAGE
             );
@@ -261,7 +202,6 @@ public class AdminFormPanel {
         jugadoresField.setText("");
         duracionField.setText("");
         edadField.setText("");
-        categoriaField.setSelectedIndex(0);
         nombreField.requestFocus();
     }
 }

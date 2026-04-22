@@ -95,11 +95,13 @@ public class Producto {
 
     @Override
     public String toString() {
+        long duracion = duracionJuego != null ? duracionJuego.toMinutes() : 0;
+
         return "Producto{" +
                 "nombre='" + nombre + '\'' +
                 ", precio=" + precio +
                 ", cantidadJugadores=" + cantidadJugadores +
-                ", duracionJuego=" + duracionJuego.toMinutes() + " min" +
+                ", duracionJuego=" + duracion + " min" +
                 ", edadMinima=" + edadMinima +
                 ", categoria='" + categoria + '\'' +
                 '}';

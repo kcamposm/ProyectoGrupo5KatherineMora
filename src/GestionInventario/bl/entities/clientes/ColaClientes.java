@@ -1,5 +1,8 @@
 package GestionInventario.bl.entities.clientes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ColaClientes {
 
     private static class NodoCliente {
@@ -13,10 +16,8 @@ public class ColaClientes {
 
     private NodoCliente frentePremium;
     private NodoCliente finPremium;
-
     private NodoCliente frenteAfiliado;
     private NodoCliente finAfiliado;
-
     private NodoCliente frenteBasico;
     private NodoCliente finBasico;
 
@@ -28,34 +29,29 @@ public class ColaClientes {
         NodoCliente nuevo = new NodoCliente(cliente);
 
         switch (cliente.getPrioridad()) {
-            case 3 -> {
-                if (frentePremium == null) {
-                    frentePremium = nuevo;
-                    finPremium = nuevo;
-                } else {
-                    finPremium.siguiente = nuevo;
-                    finPremium = nuevo;
-                }
-            }
-            case 2 -> {
-                if (frenteAfiliado == null) {
-                    frenteAfiliado = nuevo;
-                    finAfiliado = nuevo;
-                } else {
-                    finAfiliado.siguiente = nuevo;
-                    finAfiliado = nuevo;
-                }
-            }
-            default -> {
-                if (frenteBasico == null) {
-                    frenteBasico = nuevo;
-                    finBasico = nuevo;
-                } else {
-                    finBasico.siguiente = nuevo;
-                    finBasico = nuevo;
-                }
-            }
+            case 3:
+                agregarEnColaPremium(nuevo);
+                break;
+            case 2:
+                agregarEnColaAfiliado(nuevo);
+                break;
+            default:
+                agregarEnColaBasico(nuevo);
+                break;
         }
+    }
+
+    public Cliente verSiguiente() {
+        if (frentePremium != null) {
+            return frentePremium.cliente;
+        }
+        if (frenteAfiliado != null) {
+            return frenteAfiliado.cliente;
+        }
+        if (frenteBasico != null) {
+            return frenteBasico.cliente;
+        }
+        return null;
     }
 
     public Cliente atenderSiguiente() {
@@ -69,6 +65,48 @@ public class ColaClientes {
             return desencolarBasico();
         }
         return null;
+    }
+
+    public boolean estaVacia() {
+        return frentePremium == null && frenteAfiliado == null && frenteBasico == null;
+    }
+
+    public List<Cliente> obtenerClientesEnOrden() {
+        List<Cliente> clientes = new ArrayList<Cliente>();
+        agregarClientesDesde(frentePremium, clientes);
+        agregarClientesDesde(frenteAfiliado, clientes);
+        agregarClientesDesde(frenteBasico, clientes);
+        return clientes;
+    }
+
+    private void agregarEnColaPremium(NodoCliente nuevo) {
+        if (frentePremium == null) {
+            frentePremium = nuevo;
+            finPremium = nuevo;
+        } else {
+            finPremium.siguiente = nuevo;
+            finPremium = nuevo;
+        }
+    }
+
+    private void agregarEnColaAfiliado(NodoCliente nuevo) {
+        if (frenteAfiliado == null) {
+            frenteAfiliado = nuevo;
+            finAfiliado = nuevo;
+        } else {
+            finAfiliado.siguiente = nuevo;
+            finAfiliado = nuevo;
+        }
+    }
+
+    private void agregarEnColaBasico(NodoCliente nuevo) {
+        if (frenteBasico == null) {
+            frenteBasico = nuevo;
+            finBasico = nuevo;
+        } else {
+            finBasico.siguiente = nuevo;
+            finBasico = nuevo;
+        }
     }
 
     private Cliente desencolarPremium() {
@@ -98,36 +136,11 @@ public class ColaClientes {
         return cliente;
     }
 
-    public boolean estaVacia() {
-        return frentePremium == null && frenteAfiliado == null && frenteBasico == null;
-    }
-
-    public void mostrarCola() {
-        if (estaVacia()) {
-            System.out.println("No hay clientes en espera.");
-            return;
-        }
-
-        System.out.println("=== Cola de clientes ===");
-        mostrarSegmento("Premium", frentePremium);
-        mostrarSegmento("Afiliados", frenteAfiliado);
-        mostrarSegmento("Básicos", frenteBasico);
-    }
-
-    private void mostrarSegmento(String titulo, NodoCliente frente) {
-        System.out.println("-- " + titulo + " --");
-        if (frente == null) {
-            System.out.println("(sin clientes)");
-            return;
-        }
-
+    private void agregarClientesDesde(NodoCliente frente, List<Cliente> clientes) {
         NodoCliente actual = frente;
-        int posicion = 1;
-
         while (actual != null) {
-            System.out.println(posicion + ". " + actual.cliente);
+            clientes.add(actual.cliente);
             actual = actual.siguiente;
-            posicion++;
         }
     }
 }

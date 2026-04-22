@@ -28,11 +28,11 @@ public class HomePanel extends JFrame {
 
     private void setupWindow() {
         setTitle("Inventario de Juegos de Mesa - Inicio");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 520);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(700, 450));
-        setResizable(true);
+        setResizable(false);
     }
 
     private JPanel createLeftPanel() {
@@ -46,7 +46,6 @@ public class HomePanel extends JFrame {
         );
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         left.add(titleLabel);
-
         return left;
     }
 

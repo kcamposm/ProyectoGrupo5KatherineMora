@@ -59,30 +59,14 @@ public class ListaProductos {
     }
 
     public Producto buscar(String nombre) {
-        if (estaVacia()) {
-            return null;
-        }
-
         Producto temp = primero;
-        while (temp != null && !temp.getNombre().equalsIgnoreCase(nombre)) {
-            temp = temp.getSiguiente();
-        }
-        return temp;
-    }
-
-    public void mostrarLista() {
-        if (estaVacia()) {
-            System.out.println("La lista está vacía.");
-            return;
-        }
-
-        Producto temp = primero;
-        int indice = 1;
         while (temp != null) {
-            System.out.println(indice + ". " + temp);
+            if (temp.getNombre().equalsIgnoreCase(nombre)) {
+                return temp;
+            }
             temp = temp.getSiguiente();
-            indice++;
         }
+        return null;
     }
 
     public Producto eliminarNodo(String nombre) {
@@ -160,5 +144,20 @@ public class ListaProductos {
         sb.append("Total a pagar: $").append(String.format("%.2f", calcularTotal())).append("\n");
 
         return sb.toString();
+    }
+
+    public void mostrarLista() {
+        if (estaVacia()) {
+            System.out.println("La lista está vacía.");
+            return;
+        }
+
+        Producto temp = primero;
+        int indice = 1;
+        while (temp != null) {
+            System.out.println(indice + ". " + temp);
+            temp = temp.getSiguiente();
+            indice++;
+        }
     }
 }

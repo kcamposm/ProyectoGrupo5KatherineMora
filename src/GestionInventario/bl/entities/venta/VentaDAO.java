@@ -1,10 +1,13 @@
-package GestionInventario.bl.entities.venta;
+package GestionInventario.dao;
 
 import GestionInventario.bl.entities.clientes.Cliente;
 import GestionInventario.bl.entities.productos.Producto;
-import GestionInventario.dl.DBConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class VentaDAO {
 

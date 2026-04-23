@@ -1,27 +1,40 @@
 package GestionInventario.ui;
 
 import GestionInventario.bl.entities.clientes.Cliente;
-import GestionInventario.bl.entities.productos.Producto;
+import GestionInventario.bl.entities.grafo.ResultadoRuta;
 import GestionInventario.bl.entities.tienda.Tienda;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
+/**
+ * Panel de administración -- Gestión de clientes atendidos.
+ *
+ * Muestra todos los clientes que ya han sido atendidos (desencolados).
+ * Estos clientes han completado su compra y su venta fue registrada.
+ *
+ * Funciones principales:
+ *  - Tabla con: Nombre, Membresía, Prioridad #, Ubicación, Total carrito.
+ *  - Botón "Ver Factura": muestra la factura detallada del cliente seleccionado.
+ *  - Botón "Refrescar": recarga la tabla de clientes atendidos.
+ *  - Muestra el historial de clientes procesados con sus facturas.
+ */
 public class ClientesPanel {
 
     private final Tienda tienda;
     private final JPanel mainPanel;
 
-    private JTextField nombreField;
-    private JComboBox<String> prioridadBox;
-    private JComboBox<String> productosBox;
-    private JTextArea carritoArea;
+    // Tabla de clientes atendidos
+    private javax.swing.table.DefaultTableModel tablaModel;
+    private JTable tablaClientes;
 
-    private Cliente clienteActual;
+    // Contador visible de clientes atendidos
+    private JLabel totalAtendidosLabel;
 
     public ClientesPanel(Tienda tienda) {
         this.tienda = tienda;
-        this.mainPanel = new JPanel(new BorderLayout(10, 10));
+        this.mainPanel = new JPanel(new BorderLayout(0, 10));
         initUI();
     }
 
@@ -29,200 +42,227 @@ public class ClientesPanel {
         return mainPanel;
     }
 
+    /**
+     * Compatibilidad con AdminFormPanel: refresca la tabla cuando el inventario cambia.
+     * AdminFormPanel llama este método después de guardar un producto.
+     */
+    public void recargarProductos() {
+        recargarTabla();
+    }
+
+    // ----------------------------------------------------------------
+    // Construcción de la interfaz
+    // ----------------------------------------------------------------
+
     private void initUI() {
+        mainPanel.setBackground(new Color(245, 245, 245));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JLabel title = new JLabel("Registro de clientes y carrito");
-        title.setFont(new Font("SansSerif", Font.BOLD, 22));
-
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.setOpaque(false);
-        titlePanel.add(title);
-
-        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-
-        nombreField = EstilosUI.crearCampoTexto();
-
-        prioridadBox = new JComboBox<>(new String[]{
-                "1 - Básico",
-                "2 - Afiliado",
-                "3 - Premium"
-        });
-
-        productosBox = new JComboBox<>();
-        recargarProductos();
-
-        formPanel.add(new JLabel("Nombre del cliente:"));
-        formPanel.add(nombreField);
-        formPanel.add(new JLabel("Prioridad:"));
-        formPanel.add(prioridadBox);
-        formPanel.add(new JLabel("Producto:"));
-        formPanel.add(productosBox);
-
-        JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        JButton crearBtn = EstilosUI.crearBotonRedondeado(
-                "Crear cliente",
-                new Color(60, 121, 98),
-                new Color(91, 153, 128)
-        );
-
-        JButton agregarBtn = EstilosUI.crearBotonRedondeado(
-                "Agregar al carrito",
-                new Color(80, 80, 140),
-                new Color(110, 110, 180)
-        );
-
-        JButton encolarBtn = EstilosUI.crearBotonRedondeado(
-                "Enviar a cola",
-                new Color(160, 120, 60),
-                new Color(190, 150, 95)
-        );
-
-        JButton limpiarBtn = EstilosUI.crearBotonRedondeado(
-                "Limpiar",
-                new Color(130, 130, 130),
-                new Color(170, 170, 170)
-        );
-
-        crearBtn.setPreferredSize(new Dimension(150, 40));
-        agregarBtn.setPreferredSize(new Dimension(170, 40));
-        encolarBtn.setPreferredSize(new Dimension(150, 40));
-        limpiarBtn.setPreferredSize(new Dimension(120, 40));
-
-        botonesPanel.add(crearBtn);
-        botonesPanel.add(agregarBtn);
-        botonesPanel.add(encolarBtn);
-        botonesPanel.add(limpiarBtn);
-
-        carritoArea = new JTextArea();
-        carritoArea.setEditable(false);
-        carritoArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        carritoArea.setText("Aquí se mostrará el carrito del cliente.");
-
-        JScrollPane scrollPane = new JScrollPane(carritoArea);
-
-        JPanel topContainer = new JPanel(new BorderLayout());
-        topContainer.setOpaque(false);
-        topContainer.add(titlePanel, BorderLayout.NORTH);
-        topContainer.add(formPanel, BorderLayout.CENTER);
-
-        mainPanel.add(topContainer, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        mainPanel.add(botonesPanel, BorderLayout.SOUTH);
-
-        crearBtn.addActionListener(e -> crearCliente());
-        agregarBtn.addActionListener(e -> agregarProductoCarrito());
-        encolarBtn.addActionListener(e -> encolarCliente());
-        limpiarBtn.addActionListener(e -> limpiarFormulario());
+        mainPanel.add(crearCabecera(),    BorderLayout.NORTH);
+        mainPanel.add(crearPanelTabla(),  BorderLayout.CENTER);
+        mainPanel.add(crearPanelBotones(), BorderLayout.SOUTH);
     }
 
-    public void recargarProductos() {
-        if (productosBox == null) {
+    /**
+     * Cabecera con título, conteo de clientes y acciones rápidas.
+     */
+    private JPanel crearCabecera() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setOpaque(false);
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(0, 0, 12, 0)
+        ));
+
+        JLabel titulo = new JLabel("Clientes Atendidos");
+        titulo.setFont(new Font("SansSerif", Font.BOLD, 22));
+        titulo.setForeground(new Color(44, 62, 80));
+
+        totalAtendidosLabel = new JLabel("Atendidos: 0 clientes");
+        totalAtendidosLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        totalAtendidosLabel.setForeground(new Color(100, 100, 100));
+
+        JPanel tituloGroup = new JPanel(new BorderLayout(0, 4));
+        tituloGroup.setOpaque(false);
+        tituloGroup.add(titulo, BorderLayout.NORTH);
+        tituloGroup.add(totalAtendidosLabel, BorderLayout.SOUTH);
+
+        JButton refrescarBtn = EstilosUI.crearBotonRedondeado(
+                "Refrescar", new Color(108, 117, 125), new Color(140, 150, 160)
+        );
+        refrescarBtn.setPreferredSize(new Dimension(120, 40));
+
+        refrescarBtn.addActionListener(e -> recargarTabla());
+
+        JPanel botonesHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        botonesHeader.setOpaque(false);
+        botonesHeader.add(refrescarBtn);
+
+        header.add(tituloGroup,  BorderLayout.WEST);
+        header.add(botonesHeader, BorderLayout.EAST);
+        return header;
+    }
+
+    /**
+     * Tabla principal con los clientes ya atendidos.
+     * Columnas: Nombre | Membresía | Prioridad # | Ubicación | Total carrito
+     */
+    private JPanel crearPanelTabla() {
+        tablaModel = new javax.swing.table.DefaultTableModel(
+                new Object[]{"Nombre", "Membresía", "Prioridad #", "Ubicación", "Total carrito"}, 0
+        ) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        tablaClientes = new JTable(tablaModel);
+        EstilosUI.estilizarTabla(tablaClientes);
+        tablaClientes.setRowHeight(30);
+        tablaClientes.setShowVerticalLines(false);
+        tablaClientes.setGridColor(new Color(235, 235, 235));
+        tablaClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Anchos de columna sugeridos
+        tablaClientes.getColumnModel().getColumn(0).setPreferredWidth(160);  // Nombre
+        tablaClientes.getColumnModel().getColumn(1).setPreferredWidth(90);   // Membresía
+        tablaClientes.getColumnModel().getColumn(2).setPreferredWidth(85);   // Prioridad #
+        tablaClientes.getColumnModel().getColumn(3).setPreferredWidth(230);  // Ubicación
+        tablaClientes.getColumnModel().getColumn(4).setPreferredWidth(110);  // Total
+
+        JScrollPane scroll = new JScrollPane(tablaClientes);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+        scroll.getViewport().setBackground(Color.WHITE);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                "Clientes atendidos -- historial de ventas procesadas"
+        ));
+        panel.add(scroll, BorderLayout.CENTER);
+
+        recargarTabla(); // carga inicial
+        return panel;
+    }
+
+    /**
+     * Barra de botones de acción en la parte inferior del panel.
+     * Solo contiene el botón "Ver Factura" para mostrar detalles del cliente seleccionado.
+     */
+    private JPanel crearPanelBotones() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        panel.setOpaque(false);
+
+        JButton verFacturaBtn = EstilosUI.crearBotonRedondeado(
+                "Ver Factura", new Color(80, 100, 155), new Color(110, 130, 185)
+        );
+
+        verFacturaBtn.setPreferredSize(new Dimension(155, 40));
+        verFacturaBtn.addActionListener(e -> verFacturaClienteSeleccionado());
+
+        // Nota explicativa
+        JLabel nota = new JLabel("  Selecciona un cliente para ver su factura detallada.");
+        nota.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        nota.setForeground(new Color(130, 130, 130));
+
+        panel.add(verFacturaBtn);
+        panel.add(nota);
+        return panel;
+    }
+
+    // ----------------------------------------------------------------
+    // Lógica de negocio
+    // ----------------------------------------------------------------
+
+    /**
+     * Recarga la tabla con los clientes ya atendidos.
+     * Muestra el historial de clientes procesados.
+     */
+    public void recargarTabla() {
+        tablaModel.setRowCount(0);
+        // Obtener clientes atendidos
+        List<Cliente> clientes = tienda.getClientesAtendidos();
+
+        for (Cliente c : clientes) {
+            tablaModel.addRow(new Object[]{
+                    c.getNombre(),
+                    c.getTipoPrioridad(),
+                    c.getPrioridad(),
+                    c.getNombreUbicacion(),
+                    String.format("$%.2f", c.getCarrito().calcularTotal())
+            });
+        }
+
+        int total = clientes.size();
+        totalAtendidosLabel.setText("Atendidos: " + total + (total == 1 ? " cliente" : " clientes"));
+    }
+
+    // ----------------------------------------------------------------
+    // Modal: Ver Factura
+    // ----------------------------------------------------------------
+
+    /**
+     * Genera y muestra la factura del cliente atendido seleccionado en la tabla.
+     * Muestra la factura completa del cliente ya procesado.
+     */
+    private void verFacturaClienteSeleccionado() {
+        int fila = tablaClientes.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(mainPanel,
+                    "Selecciona un cliente de la tabla primero.",
+                    "Sin selección", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        productosBox.removeAllItems();
-
-        for (Producto producto : tienda.getInventario().obtenerProductosEnOrden()) {
-            productosBox.addItem(producto.getNombre());
-        }
-    }
-
-    private void crearCliente() {
-        String nombre = nombreField.getText().trim();
-
-        if (nombre.isBlank()) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Debe ingresar el nombre del cliente.",
-                    "Validación",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            nombreField.requestFocus();
+        List<Cliente> clientes = tienda.getClientesAtendidos();
+        if (fila >= clientes.size()) {
+            // La tabla está desincronizada; refrescar
+            recargarTabla();
             return;
         }
 
-        int prioridad = prioridadBox.getSelectedIndex() + 1;
-        clienteActual = new Cliente(nombre, prioridad);
+        Cliente cliente  = clientes.get(fila);
+        ResultadoRuta ruta = tienda.obtenerRutaACliente(cliente);
+        String factura   = tienda.generarFactura(cliente, ruta);
 
-        carritoArea.setText(
-                "Cliente creado: " + clienteActual.getNombre() + "\n" +
-                        "Prioridad: " + clienteActual.getTipoPrioridad() + "\n\n" +
-                        "Carrito vacío.\n"
+        mostrarModalFactura(factura, "Factura -- " + cliente.getNombre());
+    }
+
+    // ----------------------------------------------------------------
+    // Modales auxiliares
+    // ----------------------------------------------------------------
+
+    /**
+     * Modal que muestra el texto de una factura en fuente monoespaciada.
+     *
+     * @param texto  el texto generado por Tienda.generarFactura()
+     * @param titulo título del modal
+     */
+    private void mostrarModalFactura(String texto, String titulo) {
+        Window ventana = SwingUtilities.getWindowAncestor(mainPanel);
+        JDialog dialog = new JDialog(ventana, titulo, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setSize(530, 480);
+        dialog.setLocationRelativeTo(mainPanel);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JTextArea area = new JTextArea(texto);
+        area.setEditable(false);
+        area.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        area.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+
+        JButton cerrarBtn = EstilosUI.crearBotonRedondeado(
+                "Cerrar", new Color(120, 120, 120), new Color(160, 160, 160)
         );
-    }
+        cerrarBtn.setPreferredSize(new Dimension(110, 36));
+        cerrarBtn.addActionListener(e -> dialog.dispose());
 
-    private void agregarProductoCarrito() {
-        if (clienteActual == null) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "Primero debe crear un cliente.",
-                    "Validación",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 8));
+        bottom.add(cerrarBtn);
 
-        String nombreProducto = (String) productosBox.getSelectedItem();
-
-        if (nombreProducto == null || nombreProducto.isBlank()) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "No hay productos disponibles en el inventario.",
-                    "Inventario vacío",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        boolean agregado = tienda.agregarProductoAlCarrito(clienteActual, nombreProducto);
-
-        if (agregado) {
-            carritoArea.setText(
-                    "Cliente: " + clienteActual.getNombre() + "\n" +
-                            "Prioridad: " + clienteActual.getTipoPrioridad() + "\n\n" +
-                            clienteActual.getCarrito().generarDetalleFactura()
-            );
-        } else {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "No se pudo agregar el producto al carrito.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    private void encolarCliente() {
-        if (clienteActual == null) {
-            JOptionPane.showMessageDialog(
-                    mainPanel,
-                    "No hay un cliente creado para enviar a la cola.",
-                    "Validación",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        tienda.encolarCliente(clienteActual);
-
-        JOptionPane.showMessageDialog(
-                mainPanel,
-                "Cliente enviado a la cola correctamente.",
-                "Éxito",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-
-        limpiarFormulario();
-    }
-
-    private void limpiarFormulario() {
-        clienteActual = null;
-        nombreField.setText("");
-        prioridadBox.setSelectedIndex(0);
-        carritoArea.setText("Aquí se mostrará el carrito del cliente.");
-        nombreField.requestFocus();
+        dialog.add(scroll,  BorderLayout.CENTER);
+        dialog.add(bottom, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 }

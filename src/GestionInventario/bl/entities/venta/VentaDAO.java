@@ -2,6 +2,7 @@ package GestionInventario.dao;
 
 import GestionInventario.bl.entities.clientes.Cliente;
 import GestionInventario.bl.entities.productos.Producto;
+import GestionInventario.dl.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

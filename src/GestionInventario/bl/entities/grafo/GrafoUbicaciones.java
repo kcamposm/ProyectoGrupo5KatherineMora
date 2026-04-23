@@ -9,6 +9,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+/**
+ * GrafoUbicaciones es una clase que representa un grafo no dirigido ponderado
+ * para gestionar ubicaciones y las distancias entre ellas.
+ * 
+ * Esta clase implementa la estructura de datos de grafo utilizando una lista de adyacencia
+ * y proporciona funcionalidades para:
+ * - Agregar ubicaciones (nodos) al grafo
+ * - Conectar ubicaciones con distancias (aristas ponderadas)
+ * - Encontrar la ruta más corta entre dos ubicaciones usando el algoritmo de Dijkstra
+ * - Verificar si existe una ruta entre dos ubicaciones
+ * - Generar una representación textual del mapa
+ * 
+ * El grafo es no dirigido, lo que significa que si existe una conexión de A a B
+ * con distancia d, automáticamente existe una conexión de B a A con la misma distancia.
+ */
 public class GrafoUbicaciones {
 
     private final Map<String, Map<String, Double>> adyacencias;
@@ -178,21 +193,21 @@ public class GrafoUbicaciones {
     }
 
     public void cargarMapaBase() {
-        agregarUbicacion("Alajuela Centro");
-        agregarUbicacion("Aeropuerto");
-        agregarUbicacion("Heredia");
         agregarUbicacion("San Jose");
-        agregarUbicacion("Grecia");
-        agregarUbicacion("Escazu");
+        agregarUbicacion("Heredia");
         agregarUbicacion("Cartago");
+        agregarUbicacion("Alajuela");
+        agregarUbicacion("Guanacaste");
+        agregarUbicacion("Limón");
+        agregarUbicacion("Puntarenas");
 
-        agregarConexion("Alajuela Centro", "Aeropuerto", 5.0);
-        agregarConexion("Alajuela Centro", "Grecia", 18.5);
-        agregarConexion("Alajuela Centro", "Heredia", 12.0);
-        agregarConexion("Aeropuerto", "Heredia", 7.0);
-        agregarConexion("Heredia", "San Jose", 10.0);
-        agregarConexion("San Jose", "Escazu", 9.0);
-        agregarConexion("San Jose", "Cartago", 22.0);
+        agregarConexion("San Jose", "Heredia", 13.0);
+        agregarConexion("Heredia", "Cartago", 36.5);
+        agregarConexion("Cartago", "Alajuela", 44.0);
+        agregarConexion("Alajuela", "Guanacaste", 216.0);
+        agregarConexion("Guanacaste", "Limón", 312.0);
+        agregarConexion("Limón", "Puntarenas", 208.0);
+        agregarConexion("Puntarenas", "San Jose", 95.0);
     }
 
     private String resolverClave(String nombre) {

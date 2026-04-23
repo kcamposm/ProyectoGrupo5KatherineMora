@@ -1,6 +1,6 @@
 package GestionInventario.ui;
 
-import GestionInventario.bl.entities.clientes.Cliente;
+import GestionInventario.bl.entities.tienda.ResultadoAtencion;
 import GestionInventario.bl.entities.tienda.Tienda;
 
 import javax.swing.*;
@@ -65,14 +65,15 @@ public class VentasPanel {
 
     private void atenderSiguienteCliente() {
         try {
-            Cliente cliente = tienda.atenderSiguienteClienteYRegistrarVenta();
+            // atenderSiguienteClienteYRegistrarVenta() retorna ResultadoAtencion, no Cliente
+            ResultadoAtencion resultado = tienda.atenderSiguienteClienteYRegistrarVenta();
 
-            if (cliente == null) {
-                facturaArea.setText("No hay clientes en cola.");
-                return;
+            if (resultado.isAtendido()) {
+                // generarFactura requiere el cliente y la ruta calculada
+                facturaArea.setText(tienda.generarFactura(resultado.getCliente(), resultado.getRuta()));
+            } else {
+                facturaArea.setText("No fue posible atender al cliente.\n\n" + resultado.getMensaje());
             }
-
-            facturaArea.setText(tienda.generarFactura(cliente));
 
             if (clientesPanel != null) {
                 clientesPanel.recargarProductos();

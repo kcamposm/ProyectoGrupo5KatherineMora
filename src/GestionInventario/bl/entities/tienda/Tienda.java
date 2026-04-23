@@ -7,11 +7,12 @@ import GestionInventario.bl.entities.grafo.ResultadoRuta;
 import GestionInventario.bl.entities.grafo.Ubicacion;
 import GestionInventario.bl.entities.productos.ArbolProductos;
 import GestionInventario.bl.entities.productos.Producto;
-import GestionInventario.dao.ProductoDAO;
+import GestionInventario.bl.entities.productos.ProductoDAO;
 import GestionInventario.dao.VentaDAO;
 
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Tienda {
@@ -21,6 +22,7 @@ public class Tienda {
     private ArbolProductos inventario;
     private ColaClientes colaClientes;
     private GrafoUbicaciones mapaEntregas;
+    private List<Cliente> clientesAtendidos;
 
     private final ProductoDAO productoDAO;
     private final VentaDAO ventaDAO;
@@ -31,6 +33,7 @@ public class Tienda {
         this.inventario = new ArbolProductos();
         this.colaClientes = new ColaClientes();
         this.mapaEntregas = new GrafoUbicaciones();
+        this.clientesAtendidos = new ArrayList<>();
         this.productoDAO = new ProductoDAO();
         this.ventaDAO = new VentaDAO();
 
@@ -60,6 +63,10 @@ public class Tienda {
 
     public GrafoUbicaciones getMapaEntregas() {
         return mapaEntregas;
+    }
+
+    public List<Cliente> getClientesAtendidos() {
+        return clientesAtendidos;
     }
 
     public void cargarInventarioDesdeBD() throws SQLException {
@@ -135,10 +142,11 @@ public class Tienda {
         return mapaEntregas.obtenerRepresentacionMapa();
     }
 
+    public List<String> obtenerUbicacionesDisponibles() {
+        return mapaEntregas.obtenerUbicaciones();
+    }
+
     public ResultadoRuta obtenerRutaACliente(Cliente cliente) {
-        if (cliente == null) {
-            return new ResultadoRuta();
-        }
 
         return mapaEntregas.obtenerCaminoMasCorto(
                 getNombreUbicacionTienda(),
@@ -169,6 +177,10 @@ public class Tienda {
         }
 
         Cliente clienteAtendido = colaClientes.atenderSiguiente();
+        
+        // Agregar el cliente atendido a la lista de clientes atendidos
+        clientesAtendidos.add(clienteAtendido);
+        
         ventaDAO.guardarVenta(clienteAtendido);
 
         return new ResultadoAtencion(

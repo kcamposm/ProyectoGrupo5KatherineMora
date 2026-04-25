@@ -2,6 +2,12 @@ Profe, ir al main y darle correr pero antes conectar a su base de datos SQL.
 
 --Profe leer!!
 
+Cambiar en dl/DBConnection los credenciales de sql en linea 10 y 11 por los propios:
+
+    private static final String URL = "jdbc:mysql://localhost:3306/inventario_juegos?serverTimezone=UTC";
+    private static final String USER = "****";
+    private static final String PASSWORD = "*****";
+
 Para la base de datos el script de SQL:
 
 CREATE DATABASE inventario_juegos;
